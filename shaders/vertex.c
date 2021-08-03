@@ -8,5 +8,6 @@ uniform mat4 model;
 
 void main(){
   gl_Position = model * vec4(aPos, 1.0);
+
   tex_coords = vec2(atex_coords.x, atex_coords.y);
 }
