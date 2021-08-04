@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include "Graphics/gamegraphics.h"
+#include "Logic/logic.h"
 #include <glhf.h>
 
 
@@ -15,7 +16,7 @@ void mouse_callback(GLFWwindow *window, double xpos, double ypos);
 void button_callback(GLFWwindow *window, int button, int action, int mods);
 
 
-//mimics the in keyword in python
+//checks if value is in arr[]
 bool in(int arr[], int size, int value){
   for(int i =0; i < size; i++){
     if(arr[i] == value){
@@ -132,7 +133,7 @@ int main(){
   glfwSetCursorPosCallback(window, mouse_callback);
   glfwSetMouseButtonCallback(window, button_callback);
 
-
+  game current_game = new_game();
 
   while(!glfwWindowShouldClose(window)){
     glClearColor(GREEN.x, GREEN.y, GREEN.z, 1.0f);
@@ -194,7 +195,7 @@ void button_callback(GLFWwindow *window, int button, int action, int mods){
   }
 
   else if(current_cursor == HAND && GLFW_PRESS == action && button == GLFW_MOUSE_BUTTON_LEFT){
-    if(current_click == -1){
+    if(current_click < 100){
       return;
     }
     gridcolors[current_click % 100] = -1;
