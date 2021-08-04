@@ -4,6 +4,7 @@
 #include <math.h>
 #include <stdbool.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <glhf.h>
 
 
@@ -16,6 +17,17 @@ void draw_game(shader shad, unsigned VAO);
 void mouse_callback(GLFWwindow *window, double xpos, double ypos);
 
 void button_callback(GLFWwindow *window, int button, int action, int mods);
+
+
+//mimics the in keyword in python
+bool in(int arr[], int size, int value){
+  for(int i =0; i < size; i++){
+    if(arr[i] == value){
+      return true;
+    }
+  }
+  return false;
+}
 
 
 
@@ -37,6 +49,11 @@ typedef enum {
 GLFWcursor* hand;
 GLFWcursor* arrow;
 cursor current_cursor = ARROW;
+
+//the colors of each tile on the board how we determine when one of the buttons is pressed
+int gridcolors[] = {100, 101, 102, 103, 104, 105, 106, 107, 108};
+
+int current_click = -1;
 
 
 int main(){
@@ -114,6 +131,7 @@ int main(){
 
 
 
+
   glfwSetCursorPos(window, 500, 500);
   glfwSetCursorPosCallback(window, mouse_callback);
   glfwSetMouseButtonCallback(window, button_callback);
@@ -146,16 +164,26 @@ void mouse_callback(GLFWwindow *window, double xpos, double ypos){
     hand = glfwCreateStandardCursor(GLFW_HAND_CURSOR);
     arrow = glfwCreateStandardCursor(GLFW_ARROW_CURSOR);
     first_frame = false;
+
   }
 
     unsigned char pixels[1 * 1 * 4];
-    glReadPixels(WIDTH - xpos, HEIGHT - ypos, 1,1, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+    glReadPixels(xpos, HEIGHT - ypos, 1,1, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
     printf("%i, %i, %i \n", (int)pixels[0], (int)pixels[1], (int)pixels[2]);
+
     //set to the hand cursor if we are on the play button
-    if(pixels[1] != 128 && ypos > 500){
+    if(title_screen == true && pixels[1] != 128 && ypos > 500){
       glfwSetCursor(window, hand);
       current_cursor = HAND;
     }
+
+    else if(title_screen == false && in(gridcolors, 9, pixels[2])){
+      glfwSetCursor(window, hand);
+      current_cursor = HAND;
+
+      current_click = gridcolors[pixels[2] % 100];
+    }
+
     else{
       glfwSetCursor(window, arrow);
       current_cursor = ARROW;
@@ -165,9 +193,18 @@ void mouse_callback(GLFWwindow *window, double xpos, double ypos){
 
 
 void button_callback(GLFWwindow *window, int button, int action, int mods){
-  if(current_cursor == HAND && action == GLFW_PRESS && button == GLFW_MOUSE_BUTTON_LEFT){
+  if(title_screen == true && current_cursor == HAND && action == GLFW_PRESS && button == GLFW_MOUSE_BUTTON_LEFT){
     title_screen = false;
   }
+
+  else if(current_cursor == HAND && GLFW_PRESS == action && button == GLFW_MOUSE_BUTTON_LEFT){
+    if(current_click == -1){
+      return;
+    }
+    gridcolors[current_click % 100] = -1;
+
+  }
+
 }
 
 
@@ -204,6 +241,8 @@ void draw_main_screen(shader shad, unsigned int VAO, unsigned int button, unsign
 
   free_mat4(title_model);
   free_mat4(button_model);
+
+  glBindTexture(GL_TEXTURE_2D, 0);
 }
 
 
@@ -237,17 +276,34 @@ void draw_game(shader shad, unsigned VAO){
     {scale_factor, -scale_factor, 0.0f}
   };
 
+
+
   for(int i =0; i < 9; i++){
+    set_vec3("isTexture", WHITE, shad);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
     model = create_transform_mat4(SCALE, (vec3){scale_factor, scale_factor, 0.0f});
     translate_mat4(&model, translate[i]);
+
+
     set_mat4("model", model, shad);
-    set_vec3("color", rgb((vec3){0, 0, 100 - i}), shad);
+    set_vec3("color", rgb((vec3){0, 0, 100 + i}), shad);
+
+    if(gridcolors[i] == -1){
+      //texture for x/o
+      unsigned int x_texture = glhf_load_texture("res/images/x.png");
+      unsigned int o_texture = glhf_load_texture("res/images/o.png");
+
+      set_vec3("isTexture", BLACK, shad);
+      glBindTexture(GL_TEXTURE_2D, x_texture);
+    }
+
+
 
 
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, NULL);
     free_mat4(model);
   }
-
 
   //create the board grid lines
   set_vec3("color", PURPLE, shad);
@@ -257,7 +313,7 @@ void draw_game(shader shad, unsigned VAO){
 
   //draws the vertical grid lines on the screen
   for(int i =0; i < 2; i++){
-    id = create_transform_mat4(TRANSLATE, (vec3){0.25f + (i * 0.50f ), 0.0f, 0.0f});
+    id = create_transform_mat4(TRANSLATE, (vec3){0.28f + (i * 0.45f ), 0.0f, 0.0f});
     scale_mat4(&id, scale);
 
     set_mat4("model", id, shad);
