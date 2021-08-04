@@ -86,13 +86,18 @@ void draw_game(shader shad, unsigned vao, int grid_colors[]){
 
 
     //draws either an x or o if there is one there
-    if(grid_colors[i] == -1){
+    if(grid_colors[i] < 10){
       //texture for x/o
       unsigned int x_texture = glhf_load_texture("res/images/x.png");
       unsigned int o_texture = glhf_load_texture("res/images/o.png");
 
       set_vec3("isTexture", BLACK, shad);
-      glBindTexture(GL_TEXTURE_2D, x_texture);
+      if(grid_colors[i] == 0){
+        glBindTexture(GL_TEXTURE_2D, x_texture);
+      }
+      else{
+        glBindTexture(GL_TEXTURE_2D, o_texture);
+      }
     }
 
 

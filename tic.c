@@ -15,6 +15,8 @@ void mouse_callback(GLFWwindow *window, double xpos, double ypos);
 
 void button_callback(GLFWwindow *window, int button, int action, int mods);
 
+void bot_turn(GLFWwindow *window);
+
 
 //checks if value is in arr[]
 bool in(int arr[], int size, int value){
@@ -51,6 +53,7 @@ cursor current_cursor = ARROW;
 int gridcolors[] = {100, 101, 102, 103, 104, 105, 106, 107, 108};
 
 int current_click = -1;
+game current_game;
 
 
 int main(){
@@ -133,7 +136,7 @@ int main(){
   glfwSetCursorPosCallback(window, mouse_callback);
   glfwSetMouseButtonCallback(window, button_callback);
 
-  game current_game = new_game();
+  current_game = new_game();
 
   while(!glfwWindowShouldClose(window)){
     glClearColor(GREEN.x, GREEN.y, GREEN.z, 1.0f);
@@ -142,6 +145,10 @@ int main(){
     if(title_screen){
       draw_main_screen(shad, VAO, button_text, title_text);
     }else{
+
+      if(is_bot_turn(current_game)){
+        bot_turn(window);
+      }
       draw_game(game_shader, VAO, gridcolors);
     }
 
@@ -198,8 +205,19 @@ void button_callback(GLFWwindow *window, int button, int action, int mods){
     if(current_click < 100){
       return;
     }
-    gridcolors[current_click % 100] = -1;
+    gridcolors[current_click % 100] = get_player_value(current_game);
+    update_board(&current_game, current_click % 100);
 
   }
 
+}
+
+
+void bot_turn(GLFWwindow *window){
+  glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
+  sleep(1);
+  int move = bot_move(&current_game);
+  gridcolors[move] = get_player_value(current_game);
+  update_board(&current_game, move);
+  glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 }
