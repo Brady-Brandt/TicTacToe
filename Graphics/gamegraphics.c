@@ -4,10 +4,24 @@
 #include <glad/glad.h>
 
 
+
+
+drawer set_up_drawer(shader shad, unsigned int vao, int arr[]){
+  drawer result;
+  result.shad = shad;
+  result.vao = vao;
+
+  for(int i =0; i < 9; i++){
+    result.gridColors[i] = arr[i];
+  }
+
+  return result;
+}
+
 //draws the title_screen
-void draw_main_screen(shader shad, unsigned int vao, unsigned int button, unsigned int title){
-  glBindVertexArray(vao);
-  use_shader(shad);
+void draw_main_screen(drawer draw_tools, unsigned int button, unsigned int title){
+  glBindVertexArray(draw_tools.vao);
+  use_shader(draw_tools.shad);
 
 
   //enable our title text
@@ -17,8 +31,8 @@ void draw_main_screen(shader shad, unsigned int vao, unsigned int button, unsign
   //move the title to the top of the screen
   mat4 title_model = create_transform_mat4(SCALE, (vec3){1.5f, 0.25f, 0.0f});
   translate_mat4(&title_model, (vec3){0.0f, 0.75f, 0.0f});
-  set_mat4("model", title_model, shad);
-  set_vec3("color", PINK, shad);
+  set_mat4("model", title_model, draw_tools.shad);
+  set_vec3("color", PINK, draw_tools.shad);
 
   glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, NULL);
 
@@ -28,7 +42,7 @@ void draw_main_screen(shader shad, unsigned int vao, unsigned int button, unsign
   //translates play button to the bottom and scales it
   mat4 button_model = create_transform_mat4(SCALE, (vec3){0.65f, 0.25f, 0.0f});
   translate_mat4(&button_model, (vec3){0.0f, -0.5f, 0.0f});
-  set_mat4("model", button_model, shad);
+  set_mat4("model", button_model, draw_tools.shad);
 
 
   glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, NULL);
@@ -43,13 +57,12 @@ void draw_main_screen(shader shad, unsigned int vao, unsigned int button, unsign
 
 
 //draws the tic toc toe board
-void draw_game(shader shad, unsigned vao, int grid_colors[]){
+void draw_game(drawer draw_tools){
 
-  glBindVertexArray(vao);
-  use_shader(shad);
+  glBindVertexArray(draw_tools.vao);
+  use_shader(draw_tools.shad);
 
-  mat4 model;
-  set_vec3("color", YELLOW, shad);
+
 
   float scale_factor = 0.45f;
 
@@ -71,42 +84,46 @@ void draw_game(shader shad, unsigned vao, int grid_colors[]){
     {scale_factor, -scale_factor, 0.0f}
   };
 
+  //texture for x/o
+  unsigned int x_texture = glhf_load_texture("res/images/x.png");
+  unsigned int o_texture = glhf_load_texture("res/images/o.png");
 
+  mat4 model;
 
+  //draws the game squares
   for(int i =0; i < 9; i++){
-    set_vec3("isTexture", WHITE, shad);
+    set_vec3("isTexture", WHITE, draw_tools.shad);
     glBindTexture(GL_TEXTURE_2D, 0);
 
     model = create_transform_mat4(SCALE, (vec3){scale_factor, scale_factor, 0.0f});
     translate_mat4(&model, translate[i]);
 
 
-    set_mat4("model", model, shad);
-    set_vec3("color", rgb((vec3){0, 0, 100 + i}), shad);
+    set_mat4("model", model, draw_tools.shad);
+    set_vec3("color", rgb((vec3){0, 0, 100 + i}), draw_tools.shad);
 
 
     //draws either an x or o if there is one there
-    if(grid_colors[i] < 10){
-      //texture for x/o
-      unsigned int x_texture = glhf_load_texture("res/images/x.png");
-      unsigned int o_texture = glhf_load_texture("res/images/o.png");
-
-      set_vec3("isTexture", BLACK, shad);
-      if(grid_colors[i] == 0){
+    if(draw_tools.gridColors[i] < 10){
+      set_vec3("isTexture", BLACK, draw_tools.shad);
+      if(draw_tools.gridColors[i] == 0){
         glBindTexture(GL_TEXTURE_2D, x_texture);
       }
       else{
         glBindTexture(GL_TEXTURE_2D, o_texture);
       }
-    }
 
+    }
 
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, NULL);
     free_mat4(model);
   }
 
+  glDeleteTextures(1, &x_texture);
+  glDeleteTextures(1, &o_texture);
+
   //create the board grid lines
-  set_vec3("color", PURPLE, shad);
+  set_vec3("color", PURPLE, draw_tools.shad);
   vec3 scale = Vec3(1.0f, 1.35f, 0.0f);
   mat4 id;
 
@@ -116,7 +133,7 @@ void draw_game(shader shad, unsigned vao, int grid_colors[]){
     id = create_transform_mat4(TRANSLATE, (vec3){0.28f + (i * 0.45f ), 0.0f, 0.0f});
     scale_mat4(&id, scale);
 
-    set_mat4("model", id, shad);
+    set_mat4("model", id, draw_tools.shad);
 
     glDrawElements(GL_LINES, 2, GL_UNSIGNED_INT, NULL);
     free_mat4(id);
@@ -128,10 +145,31 @@ void draw_game(shader shad, unsigned vao, int grid_colors[]){
     id = create_transform_mat4(SCALE, scale);
     rotate_axis_mat4(&id, 180, (vec3){1.0f, 1.0f, 0.0f});
     translate_mat4(&id, (vec3){0.0, 0.27f + (i * 0.45f), 0.0f});
-    set_mat4("model", id, shad);
+    set_mat4("model", id, draw_tools.shad);
     glDrawElements(GL_LINES, 2, GL_UNSIGNED_INT, NULL);
     free_mat4(id);
   }
+}
 
+void display_winner(drawer draw_tools, int winner){
+
+  const char* textures[] = {"res/images/player.png", "res/images/bot.png", "res/images/draw.png"};
+  unsigned int texture = glhf_load_texture(textures[winner]);
+
+  use_shader(draw_tools.shad);
+  glBindVertexArray(draw_tools.vao);
+
+  mat4 model = create_transform_mat4(SCALE, (vec3){0.35, 0.15});
+  translate_mat4(&model, (vec3){0.0f, 0.8f, 0.0f});
+
+  set_vec3("color", ORANGE, draw_tools.shad);
+  set_vec3("isTexture", BLACK, draw_tools.shad);
+  set_mat4("model", model, draw_tools.shad);
+  glBindTexture(GL_TEXTURE_2D, texture);
+
+
+  glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, NULL);
+  free_mat4(model);
+  glBindTexture(GL_TEXTURE_2D, 0);
 
 }

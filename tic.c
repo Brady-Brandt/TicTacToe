@@ -15,11 +15,10 @@ void mouse_callback(GLFWwindow *window, double xpos, double ypos);
 
 void button_callback(GLFWwindow *window, int button, int action, int mods);
 
-void bot_turn(GLFWwindow *window);
 
 
 //checks if value is in arr[]
-bool in(int arr[], int size, int value){
+bool contains(int arr[], int size, int value){
   for(int i =0; i < size; i++){
     if(arr[i] == value){
       return true;
@@ -30,14 +29,12 @@ bool in(int arr[], int size, int value){
 
 
 
-
-
-
 //window size
 const int WIDTH = 1000;
 const int HEIGHT = 1000;
 bool first_frame = true;
 bool title_screen = true;
+bool start_game = false;
 
 //cursor types
 typedef enum {
@@ -45,15 +42,14 @@ typedef enum {
   ARROW,
 } cursor;
 
-GLFWcursor* hand;
-GLFWcursor* arrow;
+GLFWcursor *hand, *arrow;
 cursor current_cursor = ARROW;
 
-//the colors of each tile on the board how we determine when one of the buttons is pressed
-int gridcolors[] = {100, 101, 102, 103, 104, 105, 106, 107, 108};
 
-int current_click = -1;
-game current_game;
+drawer title_draw;
+drawer game_draw;
+
+game my_game;
 
 
 int main(){
@@ -136,20 +132,25 @@ int main(){
   glfwSetCursorPosCallback(window, mouse_callback);
   glfwSetMouseButtonCallback(window, button_callback);
 
-  current_game = new_game();
+  my_game = new_game();
+
+  int blank[9] = {0};
+  title_draw = set_up_drawer(shad, VAO, blank);
+
+  //the colors of each tile on the board how we determine when one of the buttons is pressed
+  int gridcolors[] = {100, 101, 102, 103, 104, 105, 106, 107, 108};
+  game_draw = set_up_drawer(game_shader, VAO, gridcolors);
 
   while(!glfwWindowShouldClose(window)){
     glClearColor(GREEN.x, GREEN.y, GREEN.z, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 
     if(title_screen){
-      draw_main_screen(shad, VAO, button_text, title_text);
-    }else{
-
-      if(is_bot_turn(current_game)){
-        bot_turn(window);
-      }
-      draw_game(game_shader, VAO, gridcolors);
+      draw_main_screen(title_draw, button_text, title_text);
+    }
+    else{
+        draw_game(game_draw);
+        play_game(&my_game, window, &game_draw);
     }
 
 
@@ -173,7 +174,7 @@ void mouse_callback(GLFWwindow *window, double xpos, double ypos){
 
     unsigned char pixels[1 * 1 * 4];
     glReadPixels(xpos, HEIGHT - ypos, 1,1, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
-    printf("%i, %i, %i \n", (int)pixels[0], (int)pixels[1], (int)pixels[2]);
+    //printf("%i, %i, %i \n", (int)pixels[0], (int)pixels[1], (int)pixels[2]);
 
     //set to the hand cursor if we are on the play button
     if(title_screen == true && pixels[1] != 128 && ypos > 500){
@@ -181,11 +182,10 @@ void mouse_callback(GLFWwindow *window, double xpos, double ypos){
       current_cursor = HAND;
     }
 
-    else if(title_screen == false && in(gridcolors, 9, pixels[2])){
+    //check if the cursor is on the board by the color of the pixels
+    else if(title_screen == false && contains(game_draw.gridColors, 9, pixels[2])){
       glfwSetCursor(window, hand);
       current_cursor = HAND;
-
-      current_click = gridcolors[pixels[2] % 100];
     }
 
     else{
@@ -199,25 +199,28 @@ void mouse_callback(GLFWwindow *window, double xpos, double ypos){
 void button_callback(GLFWwindow *window, int button, int action, int mods){
   if(title_screen == true && current_cursor == HAND && action == GLFW_PRESS && button == GLFW_MOUSE_BUTTON_LEFT){
     title_screen = false;
+    start_game = true;
   }
 
   else if(current_cursor == HAND && GLFW_PRESS == action && button == GLFW_MOUSE_BUTTON_LEFT){
-    if(current_click < 100){
+    //get the current mouse position and read in the colors at that value
+    double xpos, ypos;
+    glfwGetCursorPos(window, &xpos, &ypos);
+    unsigned char pixels[1 * 1 * 4];
+    glReadPixels(xpos, HEIGHT - ypos, 1,1, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+
+    //the color of the boards pixels ranges from 100-108
+    if(pixels[2] < 100 & pixels[2] > 109){
       return;
     }
-    gridcolors[current_click % 100] = get_player_value(current_game);
-    update_board(&current_game, current_click % 100);
 
+    //get the index of the array
+    int index = pixels[2] % 100;
+
+    //set the index on the board to the right texture
+    game_draw.gridColors[index] = get_player_value(my_game);
+    //update the logic board
+    update_board(&my_game, index);
+    glfwSetCursor(window, arrow);
   }
-
-}
-
-
-void bot_turn(GLFWwindow *window){
-  glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
-  sleep(1);
-  int move = bot_move(&current_game);
-  gridcolors[move] = get_player_value(current_game);
-  update_board(&current_game, move);
-  glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 }

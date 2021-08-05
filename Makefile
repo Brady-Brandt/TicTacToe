@@ -4,4 +4,4 @@ GLAD = /usr/local/Cellar/glad/src/glad.c
 INPUT = tic.c Graphics/gamegraphics.c Logic/logic.c
 
 all:
-	gcc -Wall $(LIBS) $(IN) $(GLAD) $(INPUT) -o main
+	gcc $(LIBS) $(IN) $(GLAD) $(INPUT) -o main

@@ -2,10 +2,20 @@
 #define GAME_GRAPHICS_H
 #include <glhf.h>
 
+typedef struct{
+  shader shad;
+  unsigned int vao;
+  int gridColors[9];
+} drawer;
 
-void draw_main_screen(shader shad, unsigned int vao ,unsigned int button, unsigned int title);
 
-void draw_game(shader shad, unsigned vao, int grid_colors[]);
+drawer set_up_drawer(shader shad, unsigned int vao, int arr[]);
+
+void draw_main_screen(drawer draw_tools ,unsigned int button, unsigned int title);
+
+void draw_game(drawer draw_tools);
+
+void display_winner(drawer draw_tools, int winner);
 
 
 
