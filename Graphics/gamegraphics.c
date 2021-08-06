@@ -90,9 +90,12 @@ void draw_game(drawer draw_tools){
 
   mat4 model;
 
+  vec4 black = {0,0,0,0};
+  vec4 white = {1,1,1,1};
+
   //draws the game squares
   for(int i =0; i < 9; i++){
-    set_vec3("isTexture", WHITE, draw_tools.shad);
+    set_vec4("isTexture", white, draw_tools.shad);
     glBindTexture(GL_TEXTURE_2D, 0);
 
     model = create_transform_mat4(SCALE, (vec3){scale_factor, scale_factor, 0.0f});
@@ -105,8 +108,8 @@ void draw_game(drawer draw_tools){
 
     //draws either an x or o if there is one there
     if(draw_tools.gridColors[i] < 10){
-      set_vec3("isTexture", BLACK, draw_tools.shad);
-      if(draw_tools.gridColors[i] == 0){
+      set_vec4("isTexture", black, draw_tools.shad);
+      if(draw_tools.gridColors[i] == 1){
         glBindTexture(GL_TEXTURE_2D, x_texture);
       }
       else{
@@ -152,6 +155,7 @@ void draw_game(drawer draw_tools){
 }
 
 void display_winner(drawer draw_tools, int winner){
+  vec4 black = {0,0,0,0};
 
   const char* textures[] = {"res/images/player.png", "res/images/bot.png", "res/images/draw.png"};
   unsigned int texture = glhf_load_texture(textures[winner]);
@@ -162,8 +166,8 @@ void display_winner(drawer draw_tools, int winner){
   mat4 model = create_transform_mat4(SCALE, (vec3){0.35, 0.15});
   translate_mat4(&model, (vec3){0.0f, 0.8f, 0.0f});
 
-  set_vec3("color", ORANGE, draw_tools.shad);
-  set_vec3("isTexture", BLACK, draw_tools.shad);
+  set_vec3("color", WHITE, draw_tools.shad);
+  set_vec4("isTexture", black, draw_tools.shad);
   set_mat4("model", model, draw_tools.shad);
   glBindTexture(GL_TEXTURE_2D, texture);
 
@@ -188,7 +192,7 @@ void display_end_buttons(drawer draw_tools){
   mat4 model = create_transform_mat4(SCALE, (vec3){0.45f, 0.15f, 0.0f});
   translate_mat4(&model, (vec3){-0.4f, -0.85f, 0.0f});
 
-  set_vec3("color", PINK, draw_tools.shad);
+  set_vec3("color", WHITE, draw_tools.shad);
   set_mat4("model", model, draw_tools.shad);
   glBindTexture(GL_TEXTURE_2D, quit);
 
