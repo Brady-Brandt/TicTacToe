@@ -1,10 +1,7 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <stdio.h>
-#include <math.h>
 #include <stdbool.h>
-#include <stdlib.h>
-#include <unistd.h>
 #include "Graphics/gamegraphics.h"
 #include "Logic/logic.h"
 #include <glhf.h>
@@ -32,7 +29,8 @@ bool contains(int arr[], int size, int value){
 //window size
 const int WIDTH = 1000;
 const int HEIGHT = 1000;
-bool first_frame = true;
+
+
 bool title_screen = true;
 
 
@@ -126,6 +124,8 @@ int main(){
   unsigned int title_text = glhf_load_texture("res/images/title.png");
 
 
+  hand = glfwCreateStandardCursor(GLFW_HAND_CURSOR);
+  arrow = glfwCreateStandardCursor(GLFW_ARROW_CURSOR);
 
 
   glfwSetCursorPos(window, 500, 500);
@@ -165,13 +165,6 @@ int main(){
 
 
 void mouse_callback(GLFWwindow *window, double xpos, double ypos){
-  if(first_frame == true){
-    hand = glfwCreateStandardCursor(GLFW_HAND_CURSOR);
-    arrow = glfwCreateStandardCursor(GLFW_ARROW_CURSOR);
-    first_frame = false;
-
-  }
-
     unsigned char pixels[1 * 1 * 4];
     ypos = HEIGHT - ypos;
     glReadPixels(xpos, ypos, 1,1, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
