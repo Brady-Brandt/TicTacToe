@@ -14,7 +14,6 @@ game new_game(){
   time_t t;
   srand((unsigned) time(&t));
   int random = rand() % 2;
-  printf("%i \n", random);
 
   //create the two player
   player human = {PLAYER, random};
@@ -22,7 +21,6 @@ game new_game(){
 
   //determine who gets to go first
   int turn = rand() % 2;
-  printf("%i \n", turn);
   player first_player = (turn == 0) ? bot : human;
 
   //create the game board array
@@ -32,7 +30,7 @@ game new_game(){
   }
 
 
-  game current_game = {human, bot, first_player, board, -1};
+  game current_game = {human, bot, first_player, board, -1, false};
   return current_game;
 }
 
@@ -187,6 +185,7 @@ void play_game(game *current_game, GLFWwindow *window, drawer *draw_tool){
 
 
   else{
+    current_game->isGameOver = true;
     //two means draw
     int win = 2;
 
@@ -196,7 +195,8 @@ void play_game(game *current_game, GLFWwindow *window, drawer *draw_tool){
     else if(result == current_game->bot.symbol){
       win = 1;
     }
-    
+
     display_winner(*draw_tool, win);
+    display_end_buttons(*draw_tool);
   }
 }

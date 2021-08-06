@@ -17,6 +17,8 @@ void draw_game(drawer draw_tools);
 
 void display_winner(drawer draw_tools, int winner);
 
+void display_end_buttons(drawer draw_tools);
+
 
 
 

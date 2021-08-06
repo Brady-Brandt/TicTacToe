@@ -30,6 +30,7 @@ typedef struct {
   player currentPlayer;
   state *board;
   int lastMove;
+  bool isGameOver;
 } game;
 
 

@@ -173,3 +173,41 @@ void display_winner(drawer draw_tools, int winner){
   glBindTexture(GL_TEXTURE_2D, 0);
 
 }
+
+
+
+void display_end_buttons(drawer draw_tools){
+  unsigned int play_again = glhf_load_texture("res/images/play_again.png");
+  unsigned int quit = glhf_load_texture("res/images/quit.png");
+
+
+  use_shader(draw_tools.shad);
+  glBindVertexArray(draw_tools.vao);
+
+  //draws the quit game button
+  mat4 model = create_transform_mat4(SCALE, (vec3){0.45f, 0.15f, 0.0f});
+  translate_mat4(&model, (vec3){-0.4f, -0.85f, 0.0f});
+
+  set_vec3("color", PINK, draw_tools.shad);
+  set_mat4("model", model, draw_tools.shad);
+  glBindTexture(GL_TEXTURE_2D, quit);
+
+  glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, NULL);
+  free_mat4(model);
+
+
+  //draw the play again button
+  model = create_transform_mat4(SCALE, (vec3){0.45f, 0.15f, 0.0f});
+  translate_mat4(&model, (vec3){0.4f, -0.85f, 0.0f});
+
+  set_mat4("model", model, draw_tools.shad);
+  glBindTexture(GL_TEXTURE_2D, play_again);
+
+  glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, NULL);
+  free_mat4(model);
+
+  glBindTexture(GL_TEXTURE_2D, 0);
+  glDeleteTextures(1, &quit);
+  glDeleteTextures(1, &play_again);
+
+}
