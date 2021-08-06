@@ -37,6 +37,8 @@ typedef struct {
 //get the players and board setup
 game new_game();
 
+void delete_game(game current_game);
+
 void update_board(game *current_game, int index);
 
 //checks the current state of the board ->

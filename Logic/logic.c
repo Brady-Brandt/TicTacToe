@@ -34,6 +34,11 @@ game new_game(){
   return current_game;
 }
 
+//frees the memory from the game
+void delete_game(game current_game){
+  free(current_game.board);
+}
+
 void update_board(game *current_game, int index){
   //set the board position to the current player
   current_game->board[index] = current_game->currentPlayer.symbol;
@@ -169,7 +174,7 @@ void bot_turn(game *current_game, GLFWwindow *window, drawer *draw_tool){
   int move = bot_move(current_game);
 
   //set the corresponding texture
-  draw_tool->gridColors[move] = get_player_value(*current_game);
+  draw_tool->gridColors[move] = get_player_value(*current_game) + 1;
   //update logic board
   update_board(current_game, move);
   glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
