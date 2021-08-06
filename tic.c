@@ -34,7 +34,7 @@ const int WIDTH = 1000;
 const int HEIGHT = 1000;
 bool first_frame = true;
 bool title_screen = true;
-bool start_game = false;
+
 
 //cursor types
 typedef enum {
@@ -173,17 +173,23 @@ void mouse_callback(GLFWwindow *window, double xpos, double ypos){
   }
 
     unsigned char pixels[1 * 1 * 4];
-    glReadPixels(xpos, HEIGHT - ypos, 1,1, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
-    //printf("%i, %i, %i \n", (int)pixels[0], (int)pixels[1], (int)pixels[2]);
+    ypos = HEIGHT - ypos;
+    glReadPixels(xpos, ypos, 1,1, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+
 
     //set to the hand cursor if we are on the play button
-    if(title_screen == true && pixels[1] != 128 && ypos > 500){
+    if(title_screen == true && pixels[1] != 128 && ypos < 500){
       glfwSetCursor(window, hand);
       current_cursor = HAND;
     }
 
     //check if the cursor is on the board by the color of the pixels
-    else if(title_screen == false && contains(game_draw.gridColors, 9, pixels[2])){
+    else if(title_screen == false && contains(game_draw.gridColors, 9, pixels[2]) && my_game.isGameOver == false){
+      glfwSetCursor(window, hand);
+      current_cursor = HAND;
+    }
+
+    else if(my_game.isGameOver == true && pixels[0] == 255 && ypos < 200){
       glfwSetCursor(window, hand);
       current_cursor = HAND;
     }
@@ -199,10 +205,9 @@ void mouse_callback(GLFWwindow *window, double xpos, double ypos){
 void button_callback(GLFWwindow *window, int button, int action, int mods){
   if(title_screen == true && current_cursor == HAND && action == GLFW_PRESS && button == GLFW_MOUSE_BUTTON_LEFT){
     title_screen = false;
-    start_game = true;
   }
 
-  else if(current_cursor == HAND && GLFW_PRESS == action && button == GLFW_MOUSE_BUTTON_LEFT){
+  else if(current_cursor == HAND && GLFW_PRESS == action && button == GLFW_MOUSE_BUTTON_LEFT && my_game.isGameOver == false){
     //get the current mouse position and read in the colors at that value
     double xpos, ypos;
     glfwGetCursorPos(window, &xpos, &ypos);
@@ -218,9 +223,47 @@ void button_callback(GLFWwindow *window, int button, int action, int mods){
     int index = pixels[2] % 100;
 
     //set the index on the board to the right texture
-    game_draw.gridColors[index] = get_player_value(my_game);
+    game_draw.gridColors[index] = get_player_value(my_game) + 1;
     //update the logic board
     update_board(&my_game, index);
     glfwSetCursor(window, arrow);
   }
+
+
+  else if(my_game.isGameOver == true && GLFW_PRESS == action && button == GLFW_MOUSE_BUTTON_LEFT && current_cursor == HAND){
+    //get the current mouse position and read in the colors at that value
+    double xpos, ypos;
+    glfwGetCursorPos(window, &xpos, &ypos);
+    unsigned char pixels[1 * 1 * 4];
+    glReadPixels(xpos, HEIGHT - ypos, 1,1, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+
+    if(pixels[0] != 255){
+      return;
+    }
+
+    //if click on quit button
+    //free the game memory and close the application
+    if(xpos < 420){
+      delete_game(my_game);
+      glfwSetWindowShouldClose(window, GL_TRUE);
+    }
+
+    //if click play again
+    //free old memory
+    //start a new game
+    //set the grid color back to their original values
+    else if(xpos > 450){
+      delete_game(my_game);
+      my_game = new_game();
+
+      for(int i =0; i < 9; i++){
+        game_draw.gridColors[i] = 100 + i;
+      }
+
+    }
+
+
+  }
+
+
 }
