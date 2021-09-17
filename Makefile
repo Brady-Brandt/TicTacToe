@@ -1,7 +1,13 @@
-LIBS = /usr/local/Cellar/glfw/3.3.4/lib/libglfw.3.3.dylib res/glmath.a
-IN = -I/usr/local/Cellar/glad/include -I/Users/bradybrandt/Documents/GLHelperFunctions
-GLAD = /usr/local/Cellar/glad/src/glad.c
-INPUT = tic.c Graphics/gamegraphics.c Logic/logic.c
+LIBS = res/dep/glfw/3.3.4/lib/libglfw.3.3.dylib res/dep/glHelper/glmath.a res/dep/glad/glad.o
+INCLUDE = -I res/dep/glfw/3.3.4/include -I res/glad/include -I res/dep/GLHelper res/dep/
+OBJS = objs/event.o objs/gamegraphics.o objs/logic.o objs/game.o
+BIN = main
 
-all:
-	gcc $(LIBS) $(IN) $(GLAD) $(INPUT) -o main
+all: $(BIN)
+
+$(BIN): $(OBJS)
+	gcc $(LIBS) $(INCLUDE) main.c -o $(BIN)
+
+
+objs/%.o: src/%.c
+	gcc -c $(INCLUDE) $< -o $@ 

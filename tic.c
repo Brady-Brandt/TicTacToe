@@ -137,7 +137,8 @@ int main(){
   int blank[9] = {0};
   title_draw = set_up_drawer(shad, VAO, blank);
 
-  //the colors of each tile on the board how we determine when one of the buttons is pressed
+  //the colors of each tile on the board
+  //how we determine when one of the buttons is pressed
   int gridcolors[] = {100, 101, 102, 103, 104, 105, 106, 107, 108};
   game_draw = set_up_drawer(game_shader, VAO, gridcolors);
 
@@ -153,6 +154,10 @@ int main(){
         play_game(&my_game, window, &game_draw);
     }
 
+    float xscale,  yscale;
+
+    glfwGetWindowContentScale(window,	&xscale,	&yscale);
+    printf("%f ,%f \n", xscale, yscale);
 
 
     glfwSwapBuffers(window);
