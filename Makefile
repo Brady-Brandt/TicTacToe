@@ -1,28 +1,32 @@
+CC = clang
+FLAGS = -std=c17
 LIBS = res/dep/glfw/src/libglfw3.a res/dep/glHelper/glmath.a res/dep/glad/glad.o
-INCLUDE = -I res/dep/glfw/3.3.4/include -I res/glad/include -I res/dep/GLHelper 
+INCLUDE = -I res/dep/glfw/include -I res/dep/glad/include -I res/dep/GLHelper/include -I res/dep -I .
 OBJS = objs/event.o objs/gamegraphics.o objs/logic.o objs/game.o
 BIN = main
 
 all: $(BIN)
 
 $(BIN): $(OBJS)
-	gcc $(LIBS) $(INCLUDE) main.c -o $(BIN)
+	$(CC) $(FLAGS) $(LIBS) $(OBJS) $(INCLUDE) main.c -o $(BIN)
 
+
+Release: GLAD GLFW GLHELPER $(OBJS)
+	$(CC) -03 $(FLAGS) $(LIBS) $(OBJS) $(INCLUDE) main.c -o $(BIN)
 
 GLAD:
 	cd res/dep/glad; \
-	CMake .; \
-	make .;
+	cmake .; \
+	make; \
 
 GLFW:
 	cd res/dep/glfw;\
 	cmake .; \
 	make;\
 
-STB:
-	cd res/dep/stb; \
-	ls | grep -v stb_image.h | xargs rm; \
-
 GLHELPER:
 	cd res/dep/GLHelper; \
 	make; \
+
+objs/%.o: src/%.c | objs
+	$(CC) $(CFLAGS) $(INCLUDE) -c $< -o $@
