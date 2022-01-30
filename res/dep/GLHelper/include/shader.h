@@ -1,11 +1,10 @@
 #ifndef GLHELPER_SHADER_H
 #define GLHELPER_SHADER_H
 
-#include <glad/glad.h>
 #include <glmath.h>
 
 typedef struct{
-  GLuint ID;
+  unsigned ID;
 } shader;
 
 
