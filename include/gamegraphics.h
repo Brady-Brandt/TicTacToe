@@ -1,6 +1,5 @@
-#ifndef GAME_GRAPHICS_H
-#define GAME_GRAPHICS_H
-#include <glhf.h>
+#pragma once
+#include <shader.h>
 
 typedef struct{
   shader shad;
@@ -18,16 +17,3 @@ void draw_game(drawer draw_tools);
 void display_winner(drawer draw_tools, int winner);
 
 void display_end_buttons(drawer draw_tools);
-
-
-
-
-
-
-
-
-
-
-
-
-#endif
