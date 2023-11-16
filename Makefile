@@ -1,32 +1,20 @@
 CC = clang
-FLAGS = -std=c17
-LIBS = res/dep/glfw/src/libglfw3.a res/dep/glHelper/glmath.a res/dep/glad/glad.o
-INCLUDE = -I res/dep/glfw/include -I res/dep/glad/include -I res/dep/GLHelper/include -I res/dep -I .
-OBJS = objs/event.o objs/gamegraphics.o objs/logic.o objs/game.o
-BIN = main
+FLAGS = 
+LIBS = -lglfw -lm 
+INCLUDE = -Ivendor/glhelper -Ivendor/glad/include/
+FILES = src/event.c src/gamegraphics.c src/logic.c
+VENDOR= vendor/glad/src/gl.c vendor/glhelper/glmath.c vendor/glhelper/shader.c
+BIN = bin/tictactoe 
 
 all: $(BIN)
 
-$(BIN): $(OBJS)
-	$(CC) $(FLAGS) $(LIBS) $(OBJS) $(INCLUDE) main.c -o $(BIN)
+$(BIN): 
+	$(CC) $(FLAGS) $(VENDOR) $(LIBS) $(FILES) $(INCLUDE) src/main.c -o $(BIN)
+
+r: 
+	./bin/tictactoe
+
+Release: $(OBJS)
+	$(CC) -03 $(FLAGS) $(INCLUDE) $(LIBS) $(VENDOR) $(FILES) $(INCLUDE) src/main.c -o $(BIN)
 
 
-Release: GLAD GLFW GLHELPER $(OBJS)
-	$(CC) -03 $(FLAGS) $(LIBS) $(OBJS) $(INCLUDE) main.c -o $(BIN)
-
-GLAD:
-	cd res/dep/glad; \
-	cmake .; \
-	make; \
-
-GLFW:
-	cd res/dep/glfw;\
-	cmake .; \
-	make;\
-
-GLHELPER:
-	cd res/dep/GLHelper; \
-	make; \
-
-objs/%.o: src/%.c | objs
-	$(CC) $(CFLAGS) $(INCLUDE) -c $< -o $@

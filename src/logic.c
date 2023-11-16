@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <time.h>
-#include "../Graphics/gamegraphics.h"
+#include "gamegraphics.h"
 #include <GLFW/glfw3.h>
 
 
