@@ -1,8 +1,8 @@
 CC = clang
-FLAGS = 
+FLAGS = -g 
 LIBS = -lglfw -lm 
-INCLUDE = -Ivendor/glhelper -Ivendor/glad/include/
-FILES = src/event.c src/gamegraphics.c src/logic.c
+INCLUDE = -Ivendor/glhelper -Ivendor/glad/include/ -Ivendor/
+FILES = src/game.c src/render.c src/context.c
 VENDOR= vendor/glad/src/gl.c vendor/glhelper/glmath.c vendor/glhelper/shader.c
 BIN = bin/tictactoe 
 
