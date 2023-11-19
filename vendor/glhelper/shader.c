@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <glad/gl.h>
 #include "glmath.h"
+#include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
 
@@ -19,23 +20,19 @@ uint32_t create_shader(const char* vertex_path, const char* fragment_path){
 
   //get the size of both files
   fseek(vertex_file, 0, SEEK_END);
-  int  vertex_size = ftell(vertex_file);
+  int  vertex_size = ftell(vertex_file) + 1;
   rewind(vertex_file);
 
   fseek(frag_file, 0, SEEK_END);
-  int frag_size = ftell(frag_file);
+  int frag_size = ftell(frag_file) + 1;
   rewind(frag_file);
 
   //strings that hold the code from the files
-  char vertexs[vertex_size];
-  char frags[frag_size];
-  memset(vertexs, 0, vertex_size);
-  memset(frags, 0, frag_size);
+  char *const vertex = calloc(vertex_size / sizeof(char), sizeof(char));
+  char *const frags = calloc(frag_size / sizeof(char), sizeof(char));
 
-  const char *vertex = vertexs;
-  const char *frag = frags;
 
-  fread(vertexs, sizeof(char),vertex_size - 1, vertex_file);
+  fread(vertex, sizeof(char),vertex_size - 1, vertex_file);
   fread(frags, sizeof(char),frag_size - 1, frag_file);
   fclose(vertex_file);
   fclose(frag_file);
@@ -46,6 +43,7 @@ uint32_t create_shader(const char* vertex_path, const char* fragment_path){
 
   int vsuccess;
   char vlog[512];
+
 
 
   //compile vertex shader and check for errors
@@ -65,7 +63,7 @@ uint32_t create_shader(const char* vertex_path, const char* fragment_path){
 
   //compile fragment uint32_t and check for errors
   frag_shader = glCreateShader(GL_FRAGMENT_SHADER);
-  glShaderSource(frag_shader, 1, &frag, NULL);
+  glShaderSource(frag_shader, 1, &frags, NULL);
   glCompileShader(frag_shader);
   glGetShaderiv(frag_shader, GL_COMPILE_STATUS, &fsuccess);
 
@@ -88,6 +86,8 @@ uint32_t create_shader(const char* vertex_path, const char* fragment_path){
   }
 
   //delete the shaderers
+  free(vertex);
+  free(frags);
   glDeleteShader(vertex_shader);
   glDeleteShader(frag_shader);
 
