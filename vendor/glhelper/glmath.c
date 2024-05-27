@@ -1,4 +1,4 @@
-#include "glmath.h"
+#include <glmath.h>
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
@@ -420,7 +420,7 @@ mat4 create_transform_mat4(Transform transform, vec4 v){
   identity.matrix[9] = 2 * v.y * v.z + 2 * v.w * v.x;
   identity.matrix[10] = 1 - 2 * (v.x * v.x) - 2 * (v.y * v.y);
   
-    return identity;
+
 }
 
 //translate the matrix by the vector
