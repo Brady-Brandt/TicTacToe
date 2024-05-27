@@ -1,9 +1,7 @@
 #include "game.h"
 #include <stdlib.h>
 #include <stdbool.h>
-#include <string.h>
 #include <time.h>
-#include <GLFW/glfw3.h>
 
 
 //get the players and board setup
@@ -14,10 +12,15 @@ void new_game(Game *game){
     if(random == 0){
         game->playerSymbol = SYMBOL_X;
         game->botSymbol = SYMBOL_O;
+    } else {
+        game->playerSymbol = SYMBOL_O;
+        game->botSymbol = SYMBOL_X;
     }
     //determine who gets to go first
     game->isPlayerTurn = rand() % 2;
-    memset(game->board, SYMBOL_EMPTY, sizeof(Symbol));
+    for(int i =0; i < 9; i++){
+        game->board[i] = SYMBOL_EMPTY;
+    }
     game->isGameOver = false;
     //used for min max algo
     game->lastMove = -1;
