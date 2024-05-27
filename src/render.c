@@ -19,6 +19,36 @@
 #define PURPLE (vec3){RGB(128,0,128)}
 #define GREEN (vec3){RGB(0,255,0)};
 
+
+
+const char* fragment= 
+    "#version 330 core\n"
+    "out vec4 FragColor;\n"
+    "\n"
+    "uniform vec3 color;\n"
+    "in vec2 tex_coords;\n"
+    "uniform sampler2D tex;\n"
+    "uniform vec4 isTexture;\n"
+    "\n"
+    "void main(){\n"
+    "  FragColor = max(texture(tex, tex_coords), isTexture) * vec4(color, 1.0);\n"
+    "}\n";
+
+const char* vertex= 
+    "#version 330 core\n"
+    "layout (location = 0) in vec3 aPos;\n"
+    "layout (location = 1) in vec2 texCoords;\n"
+    "\n"
+    "uniform mat4 model;\n"
+    "out vec2 tex_coords;\n"
+    "\n"
+    "void main(){\n"
+    "  gl_Position = model * vec4(aPos,1.0);\n"
+    "\n"
+    "  tex_coords = vec2(texCoords);\n"
+    "}\n";
+
+
 float vertices[] = {
     //pos                 //texture
     -0.5f, 0.5f, 0.0f,    0.0f, 0.0f, //top left 
@@ -62,7 +92,7 @@ static uint32_t load_texture(const unsigned char* data, int width, int height, i
 
 
 uint32_t render_init(){
-    uint32_t shader = create_shader("shaders/gamev.c", "shaders/gamef.c");
+    uint32_t shader = create_shader_from_string(vertex, fragment);
     unsigned int VAO, EBO, VBO;
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &EBO);
