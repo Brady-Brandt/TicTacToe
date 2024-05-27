@@ -7,91 +7,95 @@
 #include <string.h>
 
 
-uint32_t create_shader(const char* vertex_path, const char* fragment_path){
-  FILE *vertex_file = fopen(vertex_path, "r");
-  FILE *frag_file = fopen(fragment_path, "r");
+uint32_t create_shader_from_file(const char* vertex_path, const char* fragment_path){
+    FILE *vertex_file = fopen(vertex_path, "r");
+    FILE *frag_file = fopen(fragment_path, "r");
 
-  if(vertex_file == NULL){
-    perror("Failed to open vertex file path: ");
-  }
-  if(frag_file == NULL){
-    perror("Failed to open fragment file path: ");
-  }
+    if(vertex_file == NULL){
+        perror("Failed to open vertex file path: ");
+    }
+    if(frag_file == NULL){
+        perror("Failed to open fragment file path: ");
+    }
 
-  //get the size of both files
-  fseek(vertex_file, 0, SEEK_END);
-  int  vertex_size = ftell(vertex_file) + 1;
-  rewind(vertex_file);
+    //get the size of both files
+    fseek(vertex_file, 0, SEEK_END);
+    int  vertex_size = ftell(vertex_file) + 1;
+    rewind(vertex_file);
 
-  fseek(frag_file, 0, SEEK_END);
-  int frag_size = ftell(frag_file) + 1;
-  rewind(frag_file);
+    fseek(frag_file, 0, SEEK_END);
+    int frag_size = ftell(frag_file) + 1;
+    rewind(frag_file);
 
-  //strings that hold the code from the files
-  char *const vertex = calloc(vertex_size / sizeof(char), sizeof(char));
-  char *const frags = calloc(frag_size / sizeof(char), sizeof(char));
-
-
-  fread(vertex, sizeof(char),vertex_size - 1, vertex_file);
-  fread(frags, sizeof(char),frag_size - 1, frag_file);
-  fclose(vertex_file);
-  fclose(frag_file);
+    //strings that hold the code from the files
+    char *const vertex = calloc(vertex_size / sizeof(char), sizeof(char));
+    char *const frags = calloc(frag_size / sizeof(char), sizeof(char));
 
 
-  //compile the shaderers
-  uint32_t vertex_shader, frag_shader;
+    fread(vertex, sizeof(char),vertex_size - 1, vertex_file);
+    fread(frags, sizeof(char),frag_size - 1, frag_file);
+    fclose(vertex_file);
+    fclose(frag_file);
 
-  int vsuccess;
-  char vlog[512];
-
-
-
-  //compile vertex shader and check for errors
-  vertex_shader = glCreateShader(GL_VERTEX_SHADER);
-  glShaderSource(vertex_shader, 1, &vertex, NULL);
-  glCompileShader(vertex_shader);
-  glGetShaderiv(vertex_shader, GL_COMPILE_STATUS, &vsuccess);
+    uint32_t id = create_shader_from_string(vertex, frags);
+    free(vertex);
+    free(frags);
+    return id;
+}
 
 
-  if(!vsuccess){
-    glGetShaderInfoLog(vertex_shader, 512, NULL, vlog);
-    printf(" %s: %s \n", vertex_path, vlog);
-  }
 
-  int fsuccess;
-  char flog[512];
+uint32_t create_shader_from_string(const char* vertex, const char* fragment){
+    //compile the shaderers
+    uint32_t vertex_shader, frag_shader;
 
-  //compile fragment uint32_t and check for errors
-  frag_shader = glCreateShader(GL_FRAGMENT_SHADER);
-  glShaderSource(frag_shader, 1, &frags, NULL);
-  glCompileShader(frag_shader);
-  glGetShaderiv(frag_shader, GL_COMPILE_STATUS, &fsuccess);
+    int vsuccess;
+    char vlog[512];
 
-  if(!fsuccess){
-    glGetShaderInfoLog(frag_shader, 512, NULL, flog);
-    printf("%s: %s \n", fragment_path, flog);
-  }
+    //compile vertex shader and check for errors
+    vertex_shader = glCreateShader(GL_VERTEX_SHADER);
+    glShaderSource(vertex_shader, 1, &vertex, NULL);
+    glCompileShader(vertex_shader);
+    glGetShaderiv(vertex_shader, GL_COMPILE_STATUS, &vsuccess);
 
-  //link the shaderers together
-  GLuint id = glCreateProgram();
-  glAttachShader(id, vertex_shader);
-  glAttachShader(id, frag_shader);
-  glLinkProgram(id);
 
-  //check for linking erros
-  glGetProgramiv(id, GL_LINK_STATUS, &fsuccess);
-  if(!fsuccess){
-    glGetProgramInfoLog(id, 512, NULL, flog);
-    printf("Linking Error: %s \n", flog);
-  }
+    if(!vsuccess){
+        glGetShaderInfoLog(vertex_shader, 512, NULL, vlog);
+        fprintf(stderr, "%s: %s \n", "Failed to compile vertex shader", vlog);
+    }
 
-  //delete the shaderers
-  free(vertex);
-  free(frags);
-  glDeleteShader(vertex_shader);
-  glDeleteShader(frag_shader);
+    int fsuccess;
+    char flog[512];
 
-  return id;
+    //compile fragment uint32_t and check for errors
+    frag_shader = glCreateShader(GL_FRAGMENT_SHADER);
+    glShaderSource(frag_shader, 1, &fragment, NULL);
+    glCompileShader(frag_shader);
+    glGetShaderiv(frag_shader, GL_COMPILE_STATUS, &fsuccess);
+
+    if(!fsuccess){
+        glGetShaderInfoLog(frag_shader, 512, NULL, flog);
+        fprintf(stderr, "%s: %s \n", "Failed to compile fragment shader", flog);
+    }
+
+    //link the shaderers together
+    GLuint id = glCreateProgram();
+    glAttachShader(id, vertex_shader);
+    glAttachShader(id, frag_shader);
+    glLinkProgram(id);
+
+    //check for linking erros
+    glGetProgramiv(id, GL_LINK_STATUS, &fsuccess);
+    if(!fsuccess){
+        glGetProgramInfoLog(id, 512, NULL, flog);
+        fprintf(stderr,"Linking Error: %s \n", flog);
+    }
+
+    //delete the shaderers
+    glDeleteShader(vertex_shader);
+    glDeleteShader(frag_shader);
+
+    return id;
 }
 
 void use_shader(uint32_t shader){

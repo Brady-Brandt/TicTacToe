@@ -5,7 +5,9 @@
 #include <stdint.h>
 
 
-uint32_t create_shader(const char* vertexPath, const char* fragmentPath);
+uint32_t create_shader_from_file(const char* vertexPath, const char* fragmentPath);
+
+uint32_t create_shader_from_string(const char* vertex, const char* fragment);
 
 void use_shader(uint32_t shader);
 
